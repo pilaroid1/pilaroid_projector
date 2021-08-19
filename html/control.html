@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="css/metro-all.min.css" rel="stylesheet">
+</head>
+<style>
+    .disconnected_pilaroid {
+        filter: brightness(15%);
+    }
+
+    .images_pilaroids {
+        text-align: center;
+        height:15vh;
+        padding-top:5px;
+    }
+
+    .images_header {
+        height:64px;
+    }
+
+    .images_last {
+        transition: all 0.3s ease 0s;
+        height:60vh;
+    }
+
+    .transparent {
+        opacity:0;
+    }
+
+    .images_buttons {
+        width:100vw;
+        padding: 0;
+        margin: 0;
+        height:10vh;
+        padding-top:5px;
+        text-align: center;
+    }
+
+    .pilaroids_button {
+        width: 32%;
+        border-radius: 10px;
+        transition: all 1s ease 0s;
+    }
+
+    /* Manage CSS for all buttons states */
+    .pilaroids_button:hover {
+        background-color: gray
+    }
+
+    .pilaroids_button:focus {
+        background-color: rgb(153,190,252);
+    }
+
+    .button_left {
+        border-radius: 20px 0 0 20px;
+    }
+
+    .button_right {
+        border-radius: 0px 20px 20px 0;
+    }
+
+    .button_50 {
+        /* Center Button */
+        width: 50%;
+        margin: -2px;
+        height: 100%;
+        font-size:xx-large
+    }
+
+    .avatar {
+        border-radius: 10px;
+    }
+
+</style>
+<body>
+    <ul class="primary" data-tabs-type="group" data-role="tabs" data-expand="true">
+        <li><a href="#_images">📷 Images</a></li>
+        <li><a href="#_projector">📽️ Projecteur</a></li>
+        <li><a href="#_settings">🔧 Configuration</a></li>
+    </ul>
+    <div id="_images">
+        <div class="images_pilaroids">
+            <button onfocusout="unlockDevice()" onclick='selectPilaroid("selfie")' id="select_selfie" class="disconnected_pilaroid pilaroids_button disabled">
+                <img class="images_pilaroids" src="images/selfie-icon.png">
+            </button>
+            <button onfocusout="unlockDevice()" onclick='selectPilaroid("gif")' id="select_gif" class="disconnected_pilaroid pilaroids_button active_button disabled">
+                <img class="images_pilaroids" src="images/gif-icon.png">
+            </button>
+            <button onfocusout="unlockDevice()" onclick='selectPilaroid("pano")' id="select_pano" class="disconnected_pilaroid pilaroids_button disabled">
+                <img class="images_pilaroids" src="images/pano-icon.png">
+            </button>
+        </div>
+        <div class="card-header images_header">
+            <div class="avatar">
+                <img id="lastimage_icon" src="images/no_icon.svg">
+            </div>
+            <div id="lastimage_name" class="name">Aucun appareil selectionné</div>
+            <div id="lastimage_date" class="date"></div>
+        </div>
+        <div style="background-color:black; text-align: center;">
+            <img class="images_last" src="">
+            <img class="images_last buffer" src="">
+        </div>
+        <div class="images_buttons">
+            <button onclick="resetButton()" class="button_left button alert button_50">↪️ Reset</button>
+            <button onclick="downloadButton()" class="button_right button success button_50">💾 Enregistrer</button>
+        </div>
+    </div>
+    <div id="_projector">
+        <div class="container-fluid">
+            <div class="row" >
+                <button id="video_mapping" onclick="controlManager.toggleMapping()" style="width:100%" class="shortcut success">
+                    <span class="mif-windows icon"></span>
+                    <caption>Video Mapping</caption>
+                </button>
+            </div>
+            <div class="row flex-justify-center">
+                <div data-role="panel"
+                    data-title-caption="Contraste : <span id='contrast'>100%</span>"
+                >
+                    <button onclick="controlManager.setFilter('contrast', -10)" class="shortcut alert">
+                        <span class="badge">-10%</span>
+                        <span class="mif-minus icon"></span>
+                    </button>
+                    <button onclick="controlManager.setFilter('contrast', -1)" class="shortcut alert">
+                        <span class="badge">-1%</span>
+                        <span class="mif-minus icon"></span>
+                    </button>
+                    <button onclick="controlManager.setFilter('contrast', undefined)" class="shortcut warning">
+                        <span class="badge">100%</span>
+                        <span class="mif-loop2 icon"></span>
+                    </button>
+                    <button onclick="controlManager.setFilter('contrast', 1)" class="shortcut success">
+                        <span class="badge">+1%</span>
+                        <span class="mif-plus icon"></span>
+                    </button>
+                    <button onclick="controlManager.setFilter('contrast', 10)" class="shortcut success">
+                        <span class="badge">+10%</span>
+                        <span class="mif-plus icon"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="row flex-justify-center">
+                <div data-role="panel"
+                    data-title-caption="Saturation : <span id='saturate'>100%</span>"
+                >
+                        <button onclick="controlManager.setFilter('saturate', -10)" class="shortcut alert">
+                            <span class="badge">-10%</span>
+                            <span class="mif-minus icon"></span>
+                        </button>
+                        <button onclick="controlManager.setFilter('saturate', -1)" class="shortcut alert">
+                            <span class="badge">-1%</span>
+                            <span class="mif-minus icon"></span>
+                        </button>
+                        <button onclick="controlManager.setFilter('saturate', undefined)" class="shortcut warning">
+                            <span class="badge">100%</span>
+                            <span class="mif-loop2 icon"></span>
+                        </button>
+                        <button onclick="controlManager.setFilter('saturate', 1)" class="shortcut success">
+                            <span class="badge">+1%</span>
+                            <span class="mif-plus icon"></span>
+                        </button>
+                        <button onclick="controlManager.setFilter('saturate', 10)" class="shortcut success">
+                            <span class="badge">+10%</span>
+                            <span class="mif-plus icon"></span>
+                        </button>
+                </div>
+            </div>
+            <div class="row flex-justify-center">
+                <div data-role="panel"
+                    data-title-caption="Luminosité : <span id='brightness'>100%</span>"
+                >
+                        <button onclick="controlManager.setFilter('brightness', -10)" class="shortcut alert">
+                            <span class="badge">-10%</span>
+                            <span class="mif-minus icon"></span>
+                        </button>
+                        <button onclick="controlManager.setFilter('brightness', -1)" class="shortcut alert">
+                            <span class="badge">-1%</span>
+                            <span class="mif-minus icon"></span>
+                        </button>
+                        <button onclick="controlManager.setFilter('brightness', undefined)"class="shortcut warning">
+                            <span class="badge">100%</span>
+                            <span class="mif-loop2 icon"></span>
+                        </button>
+                        <button onclick="controlManager.setFilter('brightness', 1)" class="shortcut success">
+                            <span class="badge">+1%</span>
+                            <span class="mif-plus icon"></span>
+                        </button>
+                        <button onclick="controlManager.setFilter('brightness', 10)" class="shortcut success">
+                            <span class="badge">+10%</span>
+                            <span class="mif-plus icon"></span>
+                        </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="_settings">
+</div>
+
+<div class="dialog" data-role="dialog" id="deleteConfirm">
+    <div class="dialog-title">Remise à zéro de <span id="device_name"></span> ?</div>
+    <div class="dialog-content">
+        Voulez vous effacer toutes les photos sur <span id="device_name"></span> ?
+    </div>
+    <div class="dialog-actions">
+        <button class="button alert js-dialog-close">Non</button>
+        <button onclick="resetDevice()" class="button primary js-dialog-close">Oui</button>
+    </div>
+</div>
+
+</body>
+
+<script src="js/metro.min.js"></script>
+
+<script src="windowManager.js"></script>
+<script>
+    controlManager = new windowManager();
+    controlManager.ipc.on("newPictures", (event, id, devices) => newPictures(id, devices));
+    controlManager.ipc.on("newDevice", (event, id, devices) => newDevice(id, devices));
+    controlManager.ipc.on("removeDevice", (event, id, devices) => removeDevice(id, devices));
+    controlManager.ipc.on("syncDevices", (event, args, ip) => syncDevices());
+    controlManager.ipc.on("imageReturn", (event, args) => imageReturn(args));
+    controlManager.ipc.on("resetReturn", (event, status, devices) => resetReturn(status, devices));
+    console.log(controlManager.devices);
+
+    locked_ondevices = false;
+    selfie_nb = 0;
+    gif_nb = 0;
+    pano_nb = 0;
+    moderation = true;
+
+    selected_pilaroid = -1;
+    selected_type = ""
+    current_pilaroid = {};
+
+    function unlockDevice() {
+        console.log("Unlocked device")
+        locked_ondevices = false;
+    }
+
+    function selectPilaroid(device_type) {
+        locked_ondevices = true;
+        device_found = false;
+        nb = controlManager.getnbDevice(device_type);
+        if(nb != 0) {
+            if(selected_pilaroid < (nb - 1)) {
+                selected_pilaroid = selected_pilaroid + 1;
+            } else if (selected_pilaroid == (nb - 1)) {
+                selected_pilaroid = 0;
+            }
+            console.log(selected_pilaroid);
+            current_pilaroid = controlManager.selectDevice(device_type, selected_pilaroid);
+            console.log(current_pilaroid);
+            $("#lastimage_name").html(current_pilaroid.name);
+            $("#lastimage_icon").attr("src", src = "images/" + current_pilaroid.type + "_icon.svg");
+            if(current_pilaroid.last_image.filename != "") {
+                changeImage("http://" + current_pilaroid.ip + "/images/" + current_pilaroid.last_image.filename);
+            } else {
+                changeImage("images/no_image.png");
+            }
+        }
+    }
+
+    function resetButton() {
+        if(current_pilaroid.ip !== undefined) {
+            $("#device_name").html(current_pilaroid.name);
+            Metro.dialog.open('#deleteConfirm');
+        }
+        else {
+            NOTIFICATION_TITLE = 'Pilaroids'
+            NOTIFICATION_BODY = 'Aucune appareil selectionné'
+            new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY }).onclick = () => console.log(CLICK_MESSAGE)
+        }
+    }
+
+    function resetDevice() {
+        controlManager.ipc.send("resetDevice", current_pilaroid.ip);
+    }
+
+    function resetReturn(status, devices) {
+        console.log("Reset:" + status);
+        switch(status){
+            case "error":
+                NOTIFICATION_TITLE = 'Pilaroids'
+                NOTIFICATION_BODY = 'La remise à zéro de l\'appareil a échoué'
+                new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY }).onclick = () => console.log(CLICK_MESSAGE)
+            break;
+            case 401:
+                NOTIFICATION_TITLE = 'Pilaroids'
+                NOTIFICATION_BODY = 'La remise à zéro de l\'appareil a échoué (mot de passe incorrecte)'
+                new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY }).onclick = () => console.log(CLICK_MESSAGE)
+            break;
+            case 200:
+                NOTIFICATION_TITLE = 'Pilaroids'
+                NOTIFICATION_BODY = 'L\'appareil ' + current_pilaroid.name + " a été remis à zéro";
+                new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY }).onclick = () => console.log(CLICK_MESSAGE)
+                deselect_pilaroid();
+                controlManager.devices = devices;
+            break;
+        }
+    }
+
+    function imageReturn(args) {
+        switch(args) {
+            case "ok":
+                NOTIFICATION_TITLE = 'Projecteur'
+                NOTIFICATION_BODY = 'Image envoyé sur le projecteur'
+                new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY }).onclick = () => console.log(CLICK_MESSAGE)
+                controlManager.ipc.send("check_newimages");
+            break;
+        }
+    }
+
+    function downloadButton() {
+        if(current_pilaroid.ip !== undefined) {
+            if(current_pilaroid.last_image.filename != "") {
+                downloadPicture(current_pilaroid.type, current_pilaroid.last_image.filename, current_pilaroid.ip);
+            }
+        } else {
+            console.log("No pilaroid selected");
+        }
+    }
+
+    function downloadPicture(type, filename, ip) {
+        //Make an object with url and name
+        var file = {
+            type: type,
+            filename: filename,
+            ip: ip
+        };
+        controlManager.ipc.send("downloadImage", file);
+    }
+
+    function syncDevices() {
+        console.log("Syncing Devices");
+        console.log(controlManager.devices);
+        selfie_nb = 0;
+        pano_nb = 0;
+        gif_nb = 0;
+        // Search all devices
+        controlManager.devices.forEach(function(device) {
+            //Search device with type selfie
+            if (device.type == "selfie") {
+                selfie_nb++;
+            }
+            //Search device with type panorama
+            if (device.type == "pano") {
+                pano_nb++;
+            }
+            //Search device with type gif
+            if (device.type == "gif") {
+                gif_nb++;
+            }
+        });
+        //If there is a selfie device, change button select_selfie
+        if (selfie_nb > 0) {
+            change_button("#select_selfie", true);
+        } else {
+            change_button("#select_selfie", false);
+        }
+        if (pano_nb > 0) {
+            change_button("#select_pano", true);
+        } else {
+            change_button("#select_pano", false);
+        }
+        if (gif_nb > 0) {
+            change_button("#select_gif", true);
+        } else {
+            change_button("#select_gif", false);
+        }
+    }
+
+    function deselect_pilaroid() {
+        current_pilaroid = {};
+        selected_pilaroid = -1;
+        $("#lastimage_name").html("Aucun appareil selectionné");
+        $("#lastimage_icon").attr("src", src = "images/no_icon.svg");
+        $("#lastimage_date").html("");
+        changeImage("images/no_image.png");
+    }
+
+    function removeDevice(id, devices) {
+        console.log("Device Removed... " + controlManager.devices[id].name);
+        console.log(devices);
+        if(current_pilaroid.ip == controlManager.devices[id].ip) {
+            console.log("Currently used Pilaroid disconnected")
+            deselect_pilaroid();
+        }
+        controlManager.devices = devices;
+        syncDevices();
+    }
+
+    function newDevice(id, devices) {
+        console.log("Device Added... " + devices[id].name);
+        controlManager.devices = devices;
+        if(locked_ondevices == false) {
+            $("#lastimage_name").html(devices[id].name);
+            $("#lastimage_icon").attr("src", src = "images/" + devices[id].type + "_icon.svg");
+            console.log(devices[id])
+            console.log("New Picture in " + devices[id].name);
+            current_pilaroid = devices[id];
+            changeImage("http://" + devices[id].ip + "/images/" + devices[id].last_image.filename);
+        }
+        syncDevices();
+    }
+
+    // Excute timer_image every second
+    setInterval(timer_image, 1000);
+
+    function timer_image() {
+        if(current_pilaroid.ip != undefined) {
+            if(current_pilaroid.last_image.timestamp != "") {
+                image_date = current_pilaroid.last_image.timestamp
+                current_date = new Date() / 1000;
+                elapsed = current_date - image_date;
+                // Display on the console the current date and the elapsed time
+                //console.log(elapsed);
+                if(elapsed < 60) {
+                    elapsed = parseInt(elapsed);
+                    elapsed = elapsed + " seconde(s)"
+                } else if(elapsed > 60 && elapsed < 3600) {
+                    elapsed = elapsed / 60;
+                    elapsed = parseInt(elapsed);
+                    elapsed = elapsed + " minute(s)"
+                } else if (elapsed > 3600 && elapsed < 86400) {
+                    elapsed = elapsed / 3600;
+                    elapsed = parseInt(elapsed);
+                    elapsed = elapsed + " heure(s)";
+                } else if (elapsed > 86400) {
+                    elapsed = elapsed / 86400;
+                    elapsed = parseInt(elapsed);
+                    elapsed = elapsed + " jour(s)";
+                }
+
+                $("#lastimage_date").html("Il y a " + elapsed);
+            }
+        }
+    }
+
+    // Get a new Picture
+    function newPictures(id, devices) {
+        console.log(id);
+        console.log(devices);
+        if(locked_ondevices == false) {
+            if(devices[id].ip !== undefined) {
+                if (devices[id].last_image.filename != "") {
+                    $("#lastimage_name").html(devices[id].name);
+                    $("#lastimage_icon").attr("src", src = "images/" + devices[id].type + "_icon.svg");
+                    console.log(devices[id])
+                    console.log("New Picture in " + devices[id].name);
+                    current_pilaroid = devices[id];
+                    changeImage("http://" + devices[id].ip + "/images/" + devices[id].last_image.filename);
+                    if(moderation == false){
+                        downloadPicture(devices[id].type, devices[id].last_image.filename, devices[id].ip);
+                    }
+                }
+            }
+        }
+        controlManager.devices = devices
+    }
+
+    $(".buffer").hide();
+
+    // Add class active_button to the button that has been clicked and remove it from the others
+    $(document).on('click', '.pilaroids_button', function () {
+        console.log("Button pressed");
+        $(this).addClass('active_button');
+        $(this).siblings().removeClass('active_button');
+    });
+
+    changeImage("images/no_image.png");
+
+    function change_button(id, state) {
+        console.log(id + ": " + state);
+        if(state == true) {
+            $(id).removeClass('disconnected_pilaroid');
+            $(id).removeClass('disabled');
+        }
+        if(state == false) {
+            $(id).addClass('disconnected_pilaroid');
+            $(id).addClass("disabled");
+        }
+    }
+
+    function OnImageChange() {
+        console.log("Image loaded");
+
+        // Set new image and current image as variable
+        new_image = $(".buffer");
+        current_image = $(new_image.siblings()[0]);
+
+        // Remove buffer class on new image and add it to current image
+        new_image.removeClass("buffer");
+        current_image.addClass("buffer");
+
+        // Hide current image and show new image
+        current_image.hide();
+        new_image.fadeIn();
+    }
+
+    $('.images_last')[0].onload = function () {
+        OnImageChange();
+    }
+
+    $('.images_last')[1].onload = function () {
+        OnImageChange();
+    }
+
+    /* Fade images_last class src to another image */
+    function changeImage(url) {
+        $('.buffer').attr('src',url);
+    };
+
+</script>

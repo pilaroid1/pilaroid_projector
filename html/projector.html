@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+  <html>
+    <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+      <style>
+      body {
+        background-color: black;
+      }
+
+      .slide {
+        width:800px;
+        height:600px;
+      }
+
+      </style>
+  </head>
+<body>
+
+  <img style="display:none" class="slide" id="selfie" src="images/no_image.png">
+  <img style="display:none" class="slide" id="panoramique" src="images/no_image.png">
+  <img style="display:none" class="slide" id="gif" src="images/no_image.png">
+  <img style="display:none" class="slide" id="banniere" src="http://127.0.0.1:8888/banniere.gif">
+  <img style="display:none" id="texte" src="http://127.0.0.1:8888/texte_selfie.png">
+
+<script src="js/maptastic_usini.js"></script>
+<script src="windowManager.js"></script>
+<script>
+    projectorManager = new windowManager(projector=true);
+    // Temps entre les images
+    timer = 30000;
+    // Fichier de la banniere
+    banniere = "banniere.gif"
+
+    index_image = 0;
+    images = {"gif":""
+              ,"panoramique":""
+              ,"selfie":""
+    };
+
+    keydown = function(event) {
+      var key = event.keyCode;
+      console.log(key);
+      if(key == 78) {
+        refreshImages();
+      }
+      if(key == 75) {
+        localStorage.removeItem("maptastic.layers");
+        window.location.reload()
+      }
+    }
+
+    window.addEventListener('keydown', keydown);
+
+    // change d'image tout les "timer" millisecondes
+    setInterval(refreshImages, timer);
+    projectorManager.ipc.send("check_newimages");
+    //projectorManager.ipc.send("saveFilter");
+    // Réponse du programme
+    projectorManager.ipc.on('check_newimages', function (event, args) {
+        console.log("Check new images...")
+        console.log(args);
+        refresh_needed = false;
+        // Si une nouvelle images existes
+        if(images.selfie != args.selfie){
+          console.log("New Selfie found!");
+          if(args.selfie == undefined){
+            projectorManager.id_selfie.src = "images/no_image.png";
+          } else {
+            projectorManager.id_selfie.src = "http://127.0.0.1:8888/selfie/" + args.selfie;
+          }
+          images.selfie = args.selfie;
+          refresh_needed = true;
+          index_image = 0;
+          //refreshImages();
+        }
+
+        if(images.gif != args.gif) {
+          console.log("New Gif found!");
+          if(args.gif == undefined){
+            projectorManager.id_gif.src = "images/no_image.png";
+          } else {
+            projectorManager.id_gif.src = "http://127.0.0.1:8888/gif/" + args.gif;
+          }
+          images.gif = args.gif;
+          refresh_needed = true;
+          index_image = 1;
+          //refreshImages();
+        }
+
+        if(images.pano != args.pano){
+          console.log("New Panorama found!");
+          if(args.pano == undefined) {
+            projectorManager.id_panoramique.src = "images/no_image.png";
+          } else {
+            projectorManager.id_panoramique.src = "http://127.0.0.1:8888/pano/" + args.pano;
+          }
+          images.pano = args.pano;
+          refresh_needed = true;
+          index_image = 2;
+          //refreshImages();
+        }
+        if(refresh_needed) {
+          console.log("Refreshing...")
+          refreshImages();
+        }
+    });
+
+    index_image = 0;
+
+    function hideall() {
+      projectorManager.id_banniere.style.display = "none";
+      projectorManager.id_selfie.style.display = "none";
+      projectorManager.id_gif.style.display = "none";
+      projectorManager.id_panoramique.style.display = "none";
+    }
+
+    function refreshImages() {
+        console.log("New Slide...");
+        // Change la source de l'images
+        switch(index_image) {
+          case 0:
+            console.log("Selfie")
+            hideall();
+            projectorManager.images_mapper.soloLayer(projectorManager.id_selfie_layer);
+            projectorManager.images_mapper.showLayer(projectorManager.id_texte_layer);
+            projectorManager.id_texte.src = "http://127.0.0.1:8888/texte_selfie.png";
+            projectorManager.id_selfie.style.display = "block";
+          break;
+
+          case 1:
+            console.log("Gif")
+            hideall();
+            projectorManager.images_mapper.soloLayer(projectorManager.id_gif_layer);
+            projectorManager.images_mapper.showLayer(projectorManager.id_texte_layer);
+            projectorManager.id_texte.src = "http://127.0.0.1:8888/texte_gif.png";
+            projectorManager.id_gif.style.display = "block";
+          break;
+
+          case 2:
+            console.log("Panoramique")
+            hideall();
+            projectorManager.images_mapper.soloLayer(projectorManager.id_panoramique_layer);
+            projectorManager.images_mapper.showLayer(projectorManager.id_texte_layer);
+            projectorManager.id_texte.src = "http://127.0.0.1:8888/texte_panoramique.png";
+            projectorManager.id_panoramique.style.display = "block";
+          break;
+
+          case 3:
+            console.log("Bannière")
+            hideall();
+            projectorManager.id_banniere.src = "http://127.0.01:8888/" + banniere + "?" + Math.random(); ;
+            projectorManager.images_mapper.soloLayer(projectorManager.id_banniere_layer);
+            projectorManager.images_mapper.hideLayer(projectorManager.id_texte_layer);
+            projectorManager.id_banniere.style.display = "block";
+            projectorManager.id_texte.src = "";
+          break;
+        }
+        // Prépare la prochaine image
+        index_image++;
+
+        //Si la liste d'images est arrivé à son terme, revenir au début
+        if(index_image >= 4) {
+          index_image = 0;
+        }
+
+        projectorManager.ipc.send('check_newimages');
+    }
+
+    //mapper = Maptastic("selfie", "panoramique", "gif", "banniere", "texte");
+    /*
+    id_selfie_layer = mapper.getLayers()[0]
+    id_panoramique_layer = mapper.getLayers()[1]
+    id_gif_layer = mapper.getLayers()[2]
+    id_banniere_layer = mapper.getLayers()[3]
+    id_texte_layer = mapper.getLayers()[4]
+    */
+</script>
+
+</body>
+</html>
