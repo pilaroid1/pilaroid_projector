@@ -311,7 +311,9 @@
                 runToast("La remise à zéro de " + current_pilaroid.name + " a échoué (MOT DE PASSE INCORRECTE)");
             break;
             case 200:
-                runToast("L'appareil" + current_pilaroid.name + " a été remis à zéro")
+                runToast("L'appareil " + current_pilaroid.name + " a été remis à zéro")
+                deselect_pilaroid();
+                controlManager.devices = devices;
             break;
         }
     }
@@ -321,10 +323,10 @@
         toast(message, null, 2000);
     }
 
-    function imageReturn(args) {
+    function imageReturn(args, path) {
         switch(args) {
             case "ok":
-                runToast("Image sauvegardé sur le serveur, envoi sur le projecteur...")
+                runToast("Photo : " + path + " sauvegardé , envoi sur le projecteur...")
                 controlManager.ipc.send("check_newimages");
             break;
         }
