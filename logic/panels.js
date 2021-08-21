@@ -36,8 +36,6 @@ class Panel {
             }
         });
         this.window.loadFile(this.main_file);
-        console.log(this.main_file);
-        console.log(this.dev_mode);
         this.window.setMenuBarVisibility(this.dev_mode);
     }
 }
