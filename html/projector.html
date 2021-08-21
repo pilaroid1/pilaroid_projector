@@ -26,6 +26,7 @@
 <script src="windowManager.js"></script>
 <script>
     projectorManager = new windowManager(projector=true);
+    projectorManager.ipc.on("nextSlide", (event, args) => nextSlide());
     // Temps entre les images
     timer = 30000;
     // Fichier de la banniere
@@ -41,7 +42,7 @@
       var key = event.keyCode;
       console.log(key);
       if(key == 78) {
-        refreshImages();
+        nextSlide();
       }
       if(key == 75) {
         localStorage.removeItem("maptastic.layers");
@@ -49,10 +50,18 @@
       }
     }
 
+    function nextSlide() {
+      console.log("Go to next slide");
+      clearInterval(refreshImages_Timer);
+      refreshImages_Timer = setInterval(refreshImages, timer);
+      console.log(refreshImages_Timer.Interval);
+      refreshImages();
+    }
+
     window.addEventListener('keydown', keydown);
 
     // change d'image tout les "timer" millisecondes
-    setInterval(refreshImages, timer);
+    refreshImages_Timer = setInterval(refreshImages, timer);
     projectorManager.ipc.send("check_newimages");
     //projectorManager.ipc.send("saveFilter");
     // Réponse du programme

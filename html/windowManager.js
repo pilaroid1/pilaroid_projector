@@ -34,7 +34,7 @@ class windowManager {
         }
 
         // InterProcess Communication
-        this.ipc.on('video_mapping', (event, args) => this.toggleMapping());
+        this.ipc.on("video_mapping", (event, args) => this.toggleMapping());
         this.ipc.on("syncDevices", (event,args) => this.syncDevices(args));
         this.ipc.on("setFilter", (event, args) => this.setFilter(args));
         this.ipc.on("loadFilter", (event, args) => this.loadFilter(args));

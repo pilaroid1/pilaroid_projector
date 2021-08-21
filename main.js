@@ -50,7 +50,7 @@ user = {
 
 // Callback when a new picture is taken
 function newPictures(id, devices) {
-  console.log("NEWPICTURE");
+  console.log("NEW PICTURE");
   control_panel.window.webContents.send("newPictures", id, devices);
 }
 
@@ -164,6 +164,11 @@ ipcBrowser.on("saveFilter", (event, args) => {
 ipcBrowser.on("video_mapping", (event, args) => {
   console.log("Toggle Video Mapping");
   projector_panel.window.webContents.send("video_mapping");
+});
+
+ipcBrowser.on("nextSlide", (event, args) => {
+  console.log("Show next slide");
+  projector_panel.window.webContents.send("nextSlide");
 });
 
 ipcBrowser.on("setProjectorState", (event, args) => {
