@@ -318,7 +318,6 @@ var Maptastic = function(config) {
 	    case 32: // spacebar
 	      if(event.shiftKey){
 	        setConfigEnabled(false);
-			window.location.reload()
 	        return;
 	      }
 	    break;
@@ -702,6 +701,7 @@ var Maptastic = function(config) {
 	  canvas.style.display = enabled ? 'block' : 'none';
 
 	  if(!enabled) {
+		window.location.reload()
 	    selectedPoint = null;
 	    selectedLayer = null;
 	    dragging = false;
