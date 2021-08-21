@@ -236,11 +236,13 @@
     selected_type = ""
     current_pilaroid = {};
 
+    // Unlock Devices
     function unlockDevice() {
         console.log("Unlocked device")
         locked_ondevices = false;
     }
 
+    // Select Pilaroid (change name/icon/date and image)
     function selectPilaroid(device_type) {
         locked_ondevices = true;
         device_found = false;
@@ -264,51 +266,47 @@
         }
     }
 
+    // Show confirmation dialog for reset
     function resetButton() {
         if(current_pilaroid.ip !== undefined) {
             $("#device_name").html(current_pilaroid.name);
             Metro.dialog.open('#deleteConfirm');
         }
         else {
-            NOTIFICATION_TITLE = 'Pilaroids'
-            NOTIFICATION_BODY = 'Aucune appareil selectionné'
-            new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY }).onclick = () => console.log(CLICK_MESSAGE)
+            runToast("Aucun appareil selectionné");
         }
     }
 
+    // Send a reset device to backend, to push a reset device message to api
     function resetDevice() {
         controlManager.ipc.send("resetDevice", current_pilaroid.ip);
     }
 
+    // Reset return a toast message
     function resetReturn(status, devices) {
         console.log("Reset:" + status);
         switch(status){
             case "error":
-                NOTIFICATION_TITLE = 'Pilaroids'
-                NOTIFICATION_BODY = 'La remise à zéro de l\'appareil a échoué'
-                new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY }).onclick = () => console.log(CLICK_MESSAGE)
+                runToast("La remise à zéro de " + current_pilaroid.name + " a échoué");
             break;
             case 401:
-                NOTIFICATION_TITLE = 'Pilaroids'
-                NOTIFICATION_BODY = 'La remise à zéro de l\'appareil a échoué (mot de passe incorrecte)'
-                new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY }).onclick = () => console.log(CLICK_MESSAGE)
+                runToast("La remise à zéro de " + current_pilaroid.name + " a échoué (MOT DE PASSE INCORRECTE)");
             break;
             case 200:
-                NOTIFICATION_TITLE = 'Pilaroids'
-                NOTIFICATION_BODY = 'L\'appareil ' + current_pilaroid.name + " a été remis à zéro";
-                new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY }).onclick = () => console.log(CLICK_MESSAGE)
-                deselect_pilaroid();
-                controlManager.devices = devices;
+                runToast("L'appareil" + current_pilaroid.name + " a été remis à zéro")
             break;
         }
+    }
+
+    function runToast(message) {
+        var toast = Metro.toast.create;
+        toast(message, null, 2000);
     }
 
     function imageReturn(args) {
         switch(args) {
             case "ok":
-                NOTIFICATION_TITLE = 'Projecteur'
-                NOTIFICATION_BODY = 'Image envoyé sur le projecteur'
-                new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY }).onclick = () => console.log(CLICK_MESSAGE)
+                runToast("Image sauvegardé sur le serveur, envoi sur le projecteur...")
                 controlManager.ipc.send("check_newimages");
             break;
         }
@@ -320,6 +318,7 @@
                 downloadPicture(current_pilaroid.type, current_pilaroid.last_image.filename, current_pilaroid.ip);
             }
         } else {
+            runToast("Aucune image selectionné")
             console.log("No pilaroid selected");
         }
     }
