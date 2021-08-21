@@ -198,6 +198,13 @@
         </div>
     </div>
     <div id="_settings">
+        <div class="container-fluid">
+            <div class="row" >
+                <button id="config" onclick="open_config()" style="width:100%" class="shortcut success">
+                    <span class="mif-windows icon"></span>
+                    <caption>Ouvrir config.ini</caption>
+                </button>
+        </div>
 </div>
 
 <div class="dialog" data-role="dialog" id="deleteConfirm">
@@ -235,6 +242,10 @@
     selected_pilaroid = -1;
     selected_type = ""
     current_pilaroid = {};
+
+    function open_config(){
+        controlManager.ipc.send("openConfig");
+    }
 
     // Unlock Devices
     function unlockDevice() {

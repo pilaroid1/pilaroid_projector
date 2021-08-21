@@ -113,7 +113,7 @@ class windowManager {
             this.setFilter("brightness", this.filter.brightness);
         } else {
             $("#contrast").text(this.filter.contrast + "%");
-            $("#sature").text(this.filter.saturate + "%");
+            $("#saturate").text(this.filter.saturate + "%");
             $("#brightness").text(this.filter.brightness + "%");
         }
         this.ipc.send("saveFilter", this.filter);

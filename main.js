@@ -4,15 +4,21 @@ const Pilaroids = require("./logic/pilaroids");
 const ImagesManager = require('./logic/imagesManager');
 const { app, ipcMain } = require('electron');
 const Panel = require("./logic/panels");
+var path = require('path');
 
 dev = false;
 // Enable live reload for Electron
 if(dev) {
-  require('electron-reload')(__dirname, {
+  require('electron-reload')(["{__dirname}/*.js", "{__dirname}/logic/*.js"
+  ], {
     // Note that the path to electron may vary according to the main file
     electron: require(`${__dirname}/node_modules/electron`)
   });
 }
+
+app_path = path.join(__dirname, '../../');
+console.log("Current Directory: " + __dirname);
+console.log("App Path: " + app_path);
 
 var configfile = "config.ini";
 // In Dev config.ini is in the same folder
@@ -21,14 +27,14 @@ if(fs.existsSync('config.ini')) {
 } else {
   // In prod version config.ini will be in app folder, but we want to put it in ressources to make it easy to access
   if(fs.existsSync("resources/config.ini")) {
-    configfile = "resources/config.ini"
+    configfile = app_path + "resources/config.ini"
   } else {
-    configfile = "resources/config.ini";
+    configfile = app_path + "resources/config.ini";
     fs.copyFileSync("resources/app/config.ini", "resources/config.ini");
   }
 }
 var config = ini.parse(fs.readFileSync(configfile, 'utf-8'));
-
+console.log("Configuration --> " + configfile);
 // Get Filter
 filter = {
   "contrast": parseInt(config.filter.contrast),
@@ -86,23 +92,41 @@ projector_panel = new Panel("html/projector.html",projector=true, dev=false);
 app.whenReady().then(() => {
   control_panel.createWindow();
   projector_panel.createWindow();
-  console.log("Stop");
+
   // When you close a window, the app will quit
     control_panel.window.on('closed', () => {
       console.log("Saving parameters")
-      config.filter.contrast = filter.contrast;
-      config.filter.saturate = filter.saturate;
-      config.filter.brightness = filter.brightness;
-      fs.writeFileSync(configfile, ini.stringify(config));
+      saveFilterToINI();
       app.quit();
     });
 });
+
+function saveFilterToINI() {
+  config.filter.contrast = filter.contrast;
+  config.filter.saturate = filter.saturate;
+  config.filter.brightness = filter.brightness;
+  fs.writeFileSync(configfile, ini.stringify(config));
+}
 
 const ipcBrowser = ipcMain;
 
 /* Control IPC */
 ipcBrowser.on("downloadImage", (event, args) => {
   pilaroids.downloadImage(args.ip, args.type, args.filename, imageReturn);
+});
+
+ipcBrowser.on("openConfig", (event, args) => {
+  const { exec} = require('child_process');
+  exec(configfile, (error, stdout, stderr) => {
+    if (error) {
+        console.log(`error: ${error.message}`);
+        return;
+    }
+    if (stderr) {
+        console.log(`stderr: ${stderr}`);
+        return;
+    }
+  });
 });
 
 function imageReturn(msg) {
@@ -126,14 +150,14 @@ ipcBrowser.on("syncDevices", (event, args) => {
 
 ipcBrowser.on("loadFilter", (event, args) => {
 
-  console.log("Loading filter : " + JSON.stringify(filter));
+  console.log("BACKEND Filter --> FRONTEND Filter : " + JSON.stringify(filter));
   control_panel.window.webContents.send("loadFilter", filter);
 });
 
 ipcBrowser.on("saveFilter", (event, args) => {
-  console.log("Save filter")
   filter =  args;
-  console.log(filter)
+  console.log("FRONTEND Filter --> BACKEND Filter :" + JSON.stringify(filter))
+  saveFilterToINI();
   projector_panel.window.webContents.send("saveFilter", filter);
 });
 
@@ -153,7 +177,7 @@ ipcBrowser.on("setFilter", (event, args) => {
 });
 
 ipcBrowser.on("check_newimages", (event, args) => {
-  console.log("Check newimages");
+  console.log("Check for new images");
   saved_images.refresh();
   projector_panel.window.webContents.send("check_newimages",saved_images.images);
 });
