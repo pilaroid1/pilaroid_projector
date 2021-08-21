@@ -33,6 +33,7 @@ if(fs.existsSync('config.ini')) {
     fs.copyFileSync("resources/app/config.ini", "resources/config.ini");
   }
 }
+
 var config = ini.parse(fs.readFileSync(configfile, 'utf-8'));
 console.log("Configuration --> " + configfile);
 // Get Filter
@@ -67,9 +68,11 @@ function removeDevice(id, devices) {
 }
 
 
-
+// Images Manager
+saved_images = new ImagesManager(config.folder.images);
+saved_images.refresh();
 // Generate a Pilaroids Manager
-var pilaroids = new Pilaroids(user, config.folder.images,
+var pilaroids = new Pilaroids(user, saved_images.folder,
   callback_newpictures=newPictures,
   callback_newdevice=newDevice,
   callback_removedevice=removeDevice
@@ -77,12 +80,6 @@ var pilaroids = new Pilaroids(user, config.folder.images,
 
 // Discover Pilaroids devices using bonjour
 pilaroids.discover();
-
-
-
-// Images Manager
-saved_images = new ImagesManager(config.folder.images);
-saved_images.refresh();
 
 // Create windows
 control_panel = new Panel("html/control.html",projector=false,dev=true);
@@ -129,8 +126,8 @@ ipcBrowser.on("openConfig", (event, args) => {
   });
 });
 
-function imageReturn(msg) {
-  control_panel.window.webContents.send("imageReturn", msg);
+function imageReturn(msg, path) {
+  control_panel.window.webContents.send("imageReturn", msg, path);
 }
 
 ipcBrowser.on("resetDevice", (event, args) => {
@@ -187,9 +184,3 @@ ipcBrowser.on("check_newimages", (event, args) => {
   projector_panel.window.webContents.send("check_newimages",saved_images.images);
 });
 
-
-/*
-app.on("window-all-closed", function () {
-
-});
-*/

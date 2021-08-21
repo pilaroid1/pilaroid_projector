@@ -203,7 +203,7 @@ class Pilaroids {
             // Check if response is 404
             if(response.statusCode == 404) {
                 console.log("404: " + url);
-                callback("no");
+                callback("no", path);
                 return;
             }
             // When the response is ready
@@ -212,14 +212,14 @@ class Pilaroids {
             // When the download is complete
             file.on("finish", () => {
                 file.close();
-                callback("ok");
+                callback("ok", path);
             });
         });
 
         // When an error occurs
         request.on("error", (e) => {
             console.log("Error: " + e);
-            callback("error");
+            callback("error", path);
         });
     }
 
