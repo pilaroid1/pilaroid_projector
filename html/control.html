@@ -105,8 +105,8 @@
             <img class="images_last buffer" src="">
         </div>
         <div class="images_buttons">
-            <button onclick="resetButton()" class="button_left button alert button_50">↪️ Reset</button>
-            <button onclick="downloadButton()" class="button_right button success button_50">💾 Enregistrer</button>
+            <button id="reset_button" onclick="resetButton()" class="button_left button alert button_50">↪️ Reset</button>
+            <button id="save_button" onclick="downloadButton()" class="button_right button success button_50">💾 Enregistrer</button>
         </div>
     </div>
     <div id="_projector">
@@ -231,12 +231,16 @@
 
 <script src="windowManager.js"></script>
 <script>
+    moderation = true;
+
+
+
     controlManager = new windowManager();
     controlManager.ipc.on("newPictures", (event, id, devices) => newPictures(id, devices));
     controlManager.ipc.on("newDevice", (event, id, devices) => newDevice(id, devices));
     controlManager.ipc.on("removeDevice", (event, id, devices) => removeDevice(id, devices));
     controlManager.ipc.on("syncDevices", (event, args, ip) => syncDevices());
-    controlManager.ipc.on("imageReturn", (event, args) => imageReturn(args));
+    controlManager.ipc.on("imageReturn", (event, status, path) => imageReturn(status, path));
     controlManager.ipc.on("resetReturn", (event, status, devices) => resetReturn(status, devices));
     console.log(controlManager.devices);
 
@@ -244,11 +248,11 @@
     selfie_nb = 0;
     gif_nb = 0;
     pano_nb = 0;
-    moderation = true;
 
     selected_pilaroid = -1;
     selected_type = ""
     current_pilaroid = {};
+    last_image_saved = "";
 
     function open_config(){
         controlManager.ipc.send("openConfig");
@@ -262,7 +266,8 @@
 
     // Select Pilaroid (change name/icon/date and image)
     function selectPilaroid(device_type) {
-        locked_ondevices = true;
+        
+        //locked_ondevices = true;
         device_found = false;
         nb = controlManager.getnbDevice(device_type);
         if(nb != 0) {
@@ -273,6 +278,7 @@
             }
             console.log(selected_pilaroid);
             current_pilaroid = controlManager.selectDevice(device_type, selected_pilaroid);
+            runToast(current_pilaroid.name + " selectionné");
             console.log(current_pilaroid);
             $("#lastimage_name").html(current_pilaroid.name);
             $("#lastimage_icon").attr("src", src = "images/" + current_pilaroid.type + "_icon.svg");
@@ -289,6 +295,7 @@
         if(current_pilaroid.ip !== undefined) {
             $("#device_name").html(current_pilaroid.name);
             Metro.dialog.open('#deleteConfirm');
+            $("#resetButton").addClass("disabled");
         }
         else {
             runToast("Aucun appareil selectionné");
@@ -302,7 +309,7 @@
 
     // Reset return a toast message
     function resetReturn(status, devices) {
-        console.log("Reset:" + status);
+        console.log("Reset: " + status);
         switch(status){
             case "error":
                 runToast("La remise à zéro de " + current_pilaroid.name + " a échoué");
@@ -320,13 +327,16 @@
 
     function runToast(message) {
         var toast = Metro.toast.create;
-        toast(message, null, 2000);
+        toast("<h1>" + message + "</h1>", null, 2000);
     }
 
-    function imageReturn(args, path) {
-        switch(args) {
+    function imageReturn(status, path) {
+        console.log(status);
+        console.log(path);
+        switch(status) {
             case "ok":
-                runToast("Photo : " + path + " sauvegardé , envoi sur le projecteur...")
+                last_image_saved = path.split('/').reverse()[0];
+                runToast("Photo : " + last_image_saved + " sauvegardé , envoi sur le projecteur...")
                 controlManager.ipc.send("check_newimages");
             break;
         }
@@ -335,7 +345,11 @@
     function downloadButton() {
         if(current_pilaroid.ip !== undefined) {
             if(current_pilaroid.last_image.filename != "") {
-                downloadPicture(current_pilaroid.type, current_pilaroid.last_image.filename, current_pilaroid.ip);
+                if(current_pilaroid.last_image.filename != last_image_saved){
+                    downloadPicture(current_pilaroid.type, current_pilaroid.last_image.filename, current_pilaroid.ip);
+                } else {
+                    runToast("La photo est déjà sur le projecteur");
+                }
             }
         } else {
             runToast("Aucune image selectionné")
@@ -345,6 +359,7 @@
 
     function downloadPicture(type, filename, ip) {
         //Make an object with url and name
+        console.log("Downloading: " + filename);
         var file = {
             type: type,
             filename: filename,

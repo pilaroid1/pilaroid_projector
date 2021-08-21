@@ -20,6 +20,8 @@ app_path = path.join(__dirname, '../../');
 console.log("Current Directory: " + __dirname);
 console.log("App Path: " + app_path);
 
+
+
 var configfile = "config.ini";
 // In Dev config.ini is in the same folder
 if(fs.existsSync('config.ini')) {
@@ -35,6 +37,7 @@ if(fs.existsSync('config.ini')) {
 }
 
 var config = ini.parse(fs.readFileSync(configfile, 'utf-8'));
+
 console.log("Configuration --> " + configfile);
 // Get Filter
 filter = {
@@ -80,6 +83,16 @@ var pilaroids = new Pilaroids(user, saved_images.folder,
 
 // Discover Pilaroids devices using bonjour
 pilaroids.discover();
+
+if (config.pilaroids.name !== undefined){
+  console.log("Preselected devices");
+  preselected_devices = config.pilaroids.name.split(",");
+  // For each devices in preselected_devices
+  for(var i = 0; i < preselected_devices.length; i++) {
+    console.log("Add device name : " + preselected_devices[i]);
+    pilaroids.add(preselected_devices[i]);
+  }
+}
 
 // Create windows
 control_panel = new Panel("html/control.html",projector=false,dev=true);
@@ -142,6 +155,11 @@ function resetReturn(msg) {
 /* Projector IPC */
 ipcBrowser.on("syncDevices", (event, args) => {
   //console.log(pilaroids.devices)
+  control_panel.window.webContents.send("syncDevices", pilaroids.devices);
+});
+
+ipcBrowser.on("reSync", (event, args) => {
+  pilaroids.resync();
   control_panel.window.webContents.send("syncDevices", pilaroids.devices);
 });
 

@@ -23,10 +23,13 @@ class Pilaroids {
         setInterval(() => this.check(), 1000);
     }
 
-    setIp(err, ip) {
+    setIp(err, ip, name) {
         if(!err) {
             this.ip = ip;
             this.add(this.name, this.ip);
+        } else {
+            console.log("No Device " + name + " retry in 5s");
+            setTimeout(() => this.add(name), 5000);
         }
     }
 
@@ -41,8 +44,8 @@ class Pilaroids {
     add(name, ip=undefined) {
         if(!this.checkIfValidIP(ip)) {
             // Get IP from DNS
-            console.log("Invalid IP check it");
-            dns.lookup(name, (err, addresses) => this.setIp(err, addresses))
+            console.log("Invalid IP for: " + name);
+            dns.lookup(name + ".local", (err, addresses) => this.setIp(err, addresses, name))
             return;
         }
         // Check if the device exists before adding it
@@ -54,6 +57,13 @@ class Pilaroids {
         }
 
         this.connect(ip);
+    }
+
+    resync() {
+        // Send sync to all websockets
+        for(let i = 0; i < this.websockets.length; i++) {
+            this.websockets[i].send("sync");
+        }
     }
 
        // Add a new websocket
@@ -127,7 +137,9 @@ class Pilaroids {
                                     }
                                 }
                                 var id = i;
-                                this.callback_newdevice(id, this.devices);
+                                if(msg.event == "login") {
+                                    this.callback_newdevice(id, this.devices);
+                                }
                             }
                         }
                     }
